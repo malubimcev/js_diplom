@@ -1,6 +1,7 @@
 'use strict';
 
 class Vector {
+
   constructor(x, y) {
     if (x) {
       this.innerX = x;
@@ -18,7 +19,7 @@ class Vector {
     if (vector instanceof Vector) {
       return new Vector(this.innerX + vector.x, this.innerY + vector.y);
     } else {
-      throw 'Можно прибавлять к вектору только вектор типа Vector.';
+      throw Error('Можно прибавлять к вектору только вектор типа Vector.');
     }
   }
   
@@ -38,34 +39,35 @@ class Vector {
 
 
 class Actor {
+
   constructor(position = null, size = null, speed = null) {
+    this.actorPos = new Vector(0, 0);
+    this.actorSize = new Vector(1, 1);
+    this.actorSpeed = new Vector(0, 0);
+
     if (position) {
       if (position instanceof Vector) {
-        this.pos = position;
+        this.actorPos = position;
       } else {
-        throw 'Аргумент position не является вектором типа Vector';
+        throw Error('Аргумент position не является вектором типа Vector');
       }
-    } else {
-      this.pos = new Vector(0, 0);
     }
-    if (size)  {
-      if(size instanceof Vector) {
-        this.size = size;
+
+    if (size) {
+      if (size instanceof Vector) {
+        this.actorSize = size;
       } else {
-        throw 'Аргумент size не является вектором типа Vector';
+        throw Error('Аргумент size не является вектором типа Vector');
       }
-    } else {
-      this.size = new Vector(1, 1);
     }
+    
     if (speed) {
-      if(speed instanceof Vector) {
-        this.speed = speed;
+      if (speed instanceof Vector) {
+        this.actorSpeed = speed;
       } else {
-        throw 'Аргумент speed не является вектором типа Vector';
+        throw Error('Аргумент speed не является вектором типа Vector');
       }
-    } else {
-      this.speed = new Vector(0, 0);
-    }
+    } 
   }
 
   act() {
@@ -81,7 +83,7 @@ class Actor {
 
 
     if ((!actor) || (!(actor instanceof Actor))) {
-      throw 'Некорректный аргумент метода \'isIntersect\'. Требуется аргумент типа \'Actor\'';
+      throw Error('Некорректный аргумент метода \'isIntersect\'. Требуется аргумент типа \'Actor\'');
     } else if(actor === this) {
       return false;
     } else {
@@ -90,32 +92,32 @@ class Actor {
   }
 
   get pos() {
-    return this.position;
+    return this.actorPos;
   }
 
   set pos(newPosition) {
     if ((newPosition) && (newPosition instanceof Vector)) {
-      this.pos = newPosition;
+      this.actorPos = newPosition;
     }
   }
 
   get size() {
-    return this.size;
+    return this.actorSize;
   }
 
   set size(newSize) {
     if ((newSize) && (newSize instanceof Vector)) {
-      this.size = newSize;
+      this.actorSize = newSize;
     }
   }
 
   get speed() {
-    return this.speed;
+    return this.actorSpeed;
   }
 
   set speed(newSpeed) {
     if ((newSpeed) && (newSpeed instanceof Vector)) {
-      this.speed = newSpeed;
+      this.actorSpeed = newSpeed;
     }
   }
 
@@ -143,6 +145,7 @@ class Actor {
 
 
 class Level {
+
   constructor(grid = null, actors = null) {
     this.grid = grid || [];
     this.actors = actors || [];
@@ -209,7 +212,7 @@ class Level {
 
   actorAt(actor) {
     if ((!actor) || (!actor instanceof Actor)) {
-      throw 'Некорректный аргумент метода actorAt() объекта Actor';
+      throw Error('Некорректный аргумент метода actorAt() объекта Actor');
     } else {
       //...
 
@@ -218,7 +221,7 @@ class Level {
 
   obstacleAt(toPosition, size) {
     if((!toPosition instanceof Vector) || (!size instanceof Vector)) {
-      throw 'Аргументы метода obstacleAt объекта Level должны иметь тип Vector';
+      throw Error('Аргументы метода obstacleAt объекта Level должны иметь тип Vector');
     } else {
       //...
     }
@@ -266,6 +269,7 @@ class Level {
 
 
 class LevelParser {
+
   constructor(dict) {
     this.dict = dict;
     this.grid = [];
@@ -300,9 +304,9 @@ class LevelParser {
 
 
 class Fireball extends Actor {
+
   constructor(position = null, speed = null) {
-    this.size = new Vector(1, 1);
-    super(position, this.size, speed);
+    super(position, new Vector(1, 1), speed);
   }
 
   get type() {
@@ -329,25 +333,25 @@ class Fireball extends Actor {
 
 
 class HorizontalFireball extends Fireball {
+
   constructor(position) {
-    this.speed = new Vector(2, 0);
-    super(position, this.speed);
+    super(position, new Vector(2, 0));
   }
+
 }//end of class HorizontalFireball
 
 
 class VerticalFireball extends Fireball {
   constructor(position) {
-    this.speed = new Vector(0, 2);
-    super(position, this.speed);
+    super(position, new Vector(0, 2));
   }
 }//end of class VerticalFireball
 
 
 class FireRain extends Fireball {
+
   constructor(position) {
-    this.speed = new Vector(0, 3);
-    super(position, this.speed);
+    super(position, new Vector(0, 3));
   }
 
   handleObstacle() {
@@ -358,11 +362,11 @@ class FireRain extends Fireball {
 
 
 class Coin extends Actor {
+
   constructor(position) {
     if ((position) && (position instanceof Vector)) {
-      this.pos = position.plus(0.2, 0.1);
+      super(position.plus(0.2, 0.1), new Vector(0.6, 0.6), new Vector(0, 8));
     }    
-    super(position, new Vector(0.6, 0.6), new Vector(0, 8));
     this.springSpeed = 8;
     this.springDist = 0.07;
     this.spring = 0;//переделать: случайное число 0...2pi
@@ -396,11 +400,11 @@ class Coin extends Actor {
 
 
 class Player extends Actor {
+
   constructor(position) {
     if ((position) && (position instanceof Vector)) {
-      this.pos = position.plus(0, -0.5);
+      super(position.plus(0, -0.5), new Vector(0.8, 1.5), new Vector(0, 0));
     }
-    super(this.pos, new Vector(0.8, 1.5), new Vector(0, 0));
   }
 
   get Type() {
