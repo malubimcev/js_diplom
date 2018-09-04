@@ -121,12 +121,20 @@ class Level {
       return 'wall';
     }
     
-    const obstacleAtLeft = this.grid[actorAtNewPos.top][actorAtNewPos.left];
-    const obstacleAtRight = this.grid[actorAtNewPos.top][actorAtNewPos.right];
-    const obstacleAtTop = this.grid[actorAtNewPos.top][actorAtNewPos.left];
-    const obstacleAtBottom = this.grid[actorAtNewPos.bottom][actorAtNewPos.left];
+    const l = Math.floor(actorAtNewPos.left);
+    const t = Math.floor(actorAtNewPos.top);
+    const r = Math.ceil(actorAtNewPos.right);
+    const b = Math.ceil(actorAtNewPos.bottom);
 
-    return obstacleAtLeft || obstacleAtRight || obstacleAtTop || obstacleAtBottom || undefined;
+    for (let x = l; x < r; x++) {
+      for (let y = t; y < b; y++){
+        if (this.grid[y][x] !== undefined) {
+          return this.grid[y][x];
+        }
+      }
+    }
+
+    return undefined;
   }
 
   removeActor(actor) {
@@ -339,5 +347,3 @@ class Player extends Actor {
   }
 
 }//end of class Player
-
-
