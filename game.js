@@ -108,7 +108,7 @@ class Level {
   }
 
   obstacleAt(toPosition, size) {
-    if((!toPosition instanceof Vector) || (!(size instanceof Vector))) {
+    if(!(toPosition instanceof Vector) || (!(size instanceof Vector))) {
       throw Error('Аргументы метода "obstacleAt()" объекта "Level" должны иметь тип "Vector"');
     }
 
@@ -121,10 +121,10 @@ class Level {
       return 'wall';
     }
     
-    const obstacleAtLeft = this.grid[actorAtNewPos.pos.y][actorAtNewPos.left];
-    const obstacleAtRight = this.grid[actorAtNewPos.pos.y][actorAtNewPos.right];
-    const obstacleAtTop = this.grid[actorAtNewPos.top][actorAtNewPos.pos.x];
-    const obstacleAtBottom = this.grid[actorAtNewPos.bottom][actorAtNewPos.pos.x];
+    const obstacleAtLeft = this.grid[actorAtNewPos.top][actorAtNewPos.left];
+    const obstacleAtRight = this.grid[actorAtNewPos.top][actorAtNewPos.right];
+    const obstacleAtTop = this.grid[actorAtNewPos.top][actorAtNewPos.left];
+    const obstacleAtBottom = this.grid[actorAtNewPos.bottom][actorAtNewPos.left];
 
     return obstacleAtLeft || obstacleAtRight || obstacleAtTop || obstacleAtBottom || undefined;
   }
@@ -161,33 +161,29 @@ class Level {
 class LevelParser {
 
   constructor(dict) {
-    //для отладки используем словарь по-умолчанию
-    // const defaultActorsDict = {
-    //   '@': Actor,
-    //   '=': HorizontalFireball,
-    //   '|': VerticalFireball,
-    //   'v': FireRain,
-    //   'o': Coin
-    // };
-
-    this.dict = dict;// || defaultActorsDict;//потом убрать defaultActorsDict
+    this.dict = dict;
     this.grid = [];
     this.actors = [];
   }
 
   actorFromSymbol(symbol) {
-    if (!symbol || !(symbol in this.dict) || (typeof(this.dict[symbol]) !== Function)) {
+    if (!symbol || !(symbol in this.dict) || (typeof(this.dict[symbol]) !== 'function')) {
       return undefined;
     }
 
-    return this.dict[symbol];
+    const actor = this.dict[symbol];
+
+    if ((actor.prototype instanceof Actor) || (actor === Actor)) {
+      return actor;
+    }
+    return undefined;
   }
 
   obstacleFromSymbol(symbol) {
     const obstacleDict = {
       'x': 'wall',
       '!': 'lava'
-    };
+    }
 
     if (!symbol || !(symbol in obstacleDict)) {
       return undefined;
@@ -209,15 +205,17 @@ class LevelParser {
   }
 
   createActors(symbols) {
-    if (symbols.length === 0) {
+    if (symbols.length === 0 || this.dict == null) {
       return [];
     }
 
     symbols.forEach((string, y) => {
+
       Array.from(string).forEach((symbol, x) => {
-        const actorCreate = this.actorFromSymbol(symbol);
-        if (actorCreate instanceof Actor) {
-          this.actors.push(new actorCreate(new Vector(x, y)));
+        const actorConstructor = this.actorFromSymbol(symbol);
+
+        if (actorConstructor !== undefined) {
+          this.actors.push(new actorConstructor(new Vector(x, y)));
         }
       });
 
@@ -341,3 +339,5 @@ class Player extends Actor {
   }
 
 }//end of class Player
+
+
