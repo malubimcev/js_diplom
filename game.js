@@ -26,18 +26,21 @@ class Actor {
   constructor(position = new Vector(0, 0), size = new Vector(1, 1), speed = new Vector(0, 0)) {
     if (!(position instanceof Vector)) {
       throw Error('Аргумент position не является вектором типа "Vector"');
+      // else не нужен - выполнение закончится на throw, если в if зайдёт
     } else {
       this.pos = position;
     }
 
     if (!(size instanceof Vector)) {
       throw Error('Аргумент size не является вектором типа "Vector"');
+      // else не нужен
     } else {
       this.size = size;
     }
     
     if (!(speed instanceof Vector)) {
       throw Error('Аргумент speed не является вектором типа "Vector"');
+      // else не нужен
     } else {
       this.speed = speed;
     }
@@ -52,8 +55,10 @@ class Actor {
     const isIntersectX = () => (actor.right > this.left) && (actor.left < this.right);//сравнение по X
     const isIntersectY = () => (actor.bottom > this.top) && (actor.top < this.bottom);//сравнение по Y
 
+    // первая половина проверки лишняя т.к. undefined instanceof Actor === false
     if ((!actor) || (!(actor instanceof Actor))) {
       throw Error('Некорректный аргумент метода "isIntersect()". Требуется аргумент типа "Actor"');
+    // else можно убрать
     } else if(actor === this) {
       return false;
     }
@@ -92,18 +97,22 @@ class Level {
     this.finishDelay = 1;
     this.player = this.actors.find(item => item.type === 'player');
     this.height = this.grid.length;
+    // lengthes -> lengths :)
     const lengthes = this.grid.map(item => item.length);
     this.width = Math.max(0, ...lengthes);
   }
 
   isFinished() {
+    // скобки можно убрать
     return (this.status != null) && (this.finishDelay < 0);
   }
 
   actorAt(actor) {
+    // первая половина проверки лишняя
     if ((!actor) || (!(actor instanceof Actor))) {
       throw Error('Некорректный аргумент метода "actorAt()" объекта "Actor"');
     }
+    // вторая часть выражения лишняя (find и так вернёт undefined)
     return this.actors.find(item => item.isIntersect(actor)) || undefined;
   }
 
@@ -121,6 +130,7 @@ class Level {
       return 'wall';
     }
     
+    // переменные лучше назвать более понятными названиями
     const l = Math.floor(actorAtNewPos.left);
     const t = Math.floor(actorAtNewPos.top);
     const r = Math.ceil(actorAtNewPos.right);
@@ -128,12 +138,17 @@ class Level {
 
     for (let x = l; x < r; x++) {
       for (let y = t; y < b; y++){
+        // можно написать просто if (this.grid[y][x])
+        // и лучше this.grid[y][x] записать в переменную,
+        // чтобы 2 рааз не писать
         if (this.grid[y][x] !== undefined) {
           return this.grid[y][x];
         }
       }
     }
 
+    // лишняя строчка,
+    // функция и так вернёт undefined, если не указано иное
     return undefined;
   }
 
@@ -149,15 +164,18 @@ class Level {
   }
 
   playerTouched(objectType, actor) {
+    // не опускайте фигурные скобки
     if (this.status) return;
 
     if (objectType === 'coin') {
+      // первая половина проверки лишняя
       if (actor && (actor instanceof Actor)) {
         this.removeActor(actor);
         if (this.noMoreActors('coin')) {
           this.status = 'won';
         }
       }
+      // я бы эту проверку сделал в начале метода
     } else if (objectType === 'lava' || objectType === 'fireball') {
       this.status = 'lost';
     }
@@ -168,13 +186,16 @@ class Level {
 
 class LevelParser {
 
+  // можно добавить значение по-умолчанию
   constructor(dict) {
     this.dict = dict;
+    // это лишнее
     this.grid = [];
     this.actors = [];
   }
 
   actorFromSymbol(symbol) {
+    // в этом методе можно вообще ве прорки убрать и оставить одну строчку
     if (!symbol || !(symbol in this.dict) || (typeof(this.dict[symbol]) !== 'function')) {
       return undefined;
     }
@@ -188,11 +209,15 @@ class LevelParser {
   }
 
   obstacleFromSymbol(symbol) {
+    // лучше сделать этот объект полем класса и об\ъявить в конструкторе
+    // или объявить его вне класса
+    // (чтобы каждый раз не создавать)
     const obstacleDict = {
       'x': 'wall',
       '!': 'lava'
     }
 
+    // лишняя проверка
     if (!symbol || !(symbol in obstacleDict)) {
       return undefined;
     }
@@ -201,6 +226,7 @@ class LevelParser {
   }
 
   createGrid(symbols) {
+    // тут можно просто использовать map 2 раза
     if (symbols.length === 0) {
       return [];
     }
@@ -213,12 +239,15 @@ class LevelParser {
   }
 
   createActors(symbols) {
+    // а здесь reduce
     if (symbols.length === 0 || this.dict == null) {
       return [];
     }
 
     symbols.forEach((string, y) => {
 
+      // строки лучше преобразовывать в массивы с помощью .split
+      // так сразу понятно что работаем со строкой
       Array.from(string).forEach((symbol, x) => {
         const actorConstructor = this.actorFromSymbol(symbol);
 
@@ -295,6 +324,7 @@ class FireRain extends Fireball {
   }
 
   handleObstacle() {
+    // непонятно что делает эта строчка
     this.speed.times(1);//переопределяем метод родителя
     this.pos = this.startPos;
   }
