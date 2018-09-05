@@ -2,46 +2,20 @@
 
 class Vector {
 
-  // можно добавить значения по-умолчанию
-  constructor(x, y) {
-    // это лишняя проверка
-    if (x) {
-      this.innerX = x;
-    } else {
-      this.innerX = 0;
-    }
-    // лишняя проверка
-    if (y) {
-      this.innerY = y;
-    } else {
-      this.innerY = 0;
-    }
+  constructor(x = 0, y = 0) {
+    this.x = x;
+    this.y = y;
   }
   
   plus(vector) {
-    if (vector instanceof Vector) {
-      return new Vector(this.innerX + vector.x, this.innerY + vector.y);
-    // если if заканчивается на return, то else можно не писать
-    } else {
-      // лучше сначала проверить исключительные ситуации,
-      // а потом писать основной код
+    if (!(vector instanceof Vector)) {
       throw Error('Можно прибавлять к вектору только вектор типа Vector.');
-    }
+    }      
+    return new Vector(this.x + vector.x, this.y + vector.y);
   }
   
-  // можно добавить значение по-умолчанию
   times(multiplicator) {
-    return new Vector(this.innerX * multiplicator, this.innerY * multiplicator);
-  }
-  
-  // так можно, только не забывайте,
-  // что innerX и innerY доступны для изменения извне
-  get x() {
-    return this.innerX;
-  }
-  
-  get y() {
-    return this.innerY;
+    return new Vector(this.x * multiplicator, this.y * multiplicator);
   }
 
 }//end of class Vector
@@ -49,38 +23,24 @@ class Vector {
 
 class Actor {
 
-  // некорректные значения по-умолчанию
-  constructor(position = null, size = null, speed = null) {
-    // ?
-    this.actorPos = new Vector(0, 0);
-    this.actorSize = new Vector(1, 1);
-    this.actorSpeed = new Vector(0, 0);
-
-    // первая проверка лишняя
-    if (position) {
-      if (position instanceof Vector) {
-        this.actorPos = position;
-      } else {
-        // сначала проверки, потом основной код лучше
-        throw Error('Аргумент position не является вектором типа Vector');
-      }
+  constructor(position = new Vector(0, 0), size = new Vector(1, 1), speed = new Vector(0, 0)) {
+    if (!(position instanceof Vector)) {
+      throw Error('Аргумент position не является вектором типа "Vector"');
+    } else {
+      this.pos = position;
     }
 
-    if (size) {
-      if (size instanceof Vector) {
-        this.actorSize = size;
-      } else {
-        throw Error('Аргумент size не является вектором типа Vector');
-      }
+    if (!(size instanceof Vector)) {
+      throw Error('Аргумент size не является вектором типа "Vector"');
+    } else {
+      this.size = size;
     }
     
-    if (speed) {
-      if (speed instanceof Vector) {
-        this.actorSpeed = speed;
-      } else {
-        throw Error('Аргумент speed не является вектором типа Vector');
-      }
-    } 
+    if (!(speed instanceof Vector)) {
+      throw Error('Аргумент speed не является вектором типа "Vector"');
+    } else {
+      this.speed = speed;
+    }
   }
 
   act() {
@@ -89,57 +49,15 @@ class Actor {
 
   isIntersect(actor) {
     //функции сравнения координат по каждой границе объекта:
-    const isLeftIntersect = () => actor.right > this.left;//сравнение по левому краю
-    const isRightIntersect = () => actor.left < this.right;//сравнение по правому краю
-    const isTopIntersect = () => actor.bottom > this.top;//сравнение по вернему краю
-    const isBottomIntersect = () => actor.top < this.bottom;//сравнение по нижнему краю
-
+    const isIntersectX = () => (actor.right > this.left) && (actor.left < this.right);//сравнение по X
+    const isIntersectY = () => (actor.bottom > this.top) && (actor.top < this.bottom);//сравнение по Y
 
     if ((!actor) || (!(actor instanceof Actor))) {
-      // чтобы не экранировать кавычки можно использовать двойные, например
-      throw Error('Некорректный аргумент метода \'isIntersect\'. Требуется аргумент типа \'Actor\'');
-      // else не нужен, после throw выполнение закончится
+      throw Error('Некорректный аргумент метода "isIntersect()". Требуется аргумент типа "Actor"');
     } else if(actor === this) {
       return false;
-    // else не нужен
-    } else {
-      // по-моему лишнее усложение, но имеет право на жизнь
-      return isLeftIntersect() && isRightIntersect() && isTopIntersect() && isBottomIntersect();
     }
-  }
-
-  get pos() {
-    return this.actorPos;
-  }
-
-  // очень опасный код, если где-нибудь закрадётся ошибка,
-  // отлаживаться будет очень сложно
-  set pos(newPosition) {
-    if ((newPosition) && (newPosition instanceof Vector)) {
-      this.actorPos = newPosition;
-    }
-  }
-
-  // по-моему лучше убрать эти уложения и сделать просто свойство size,
-  // если у вас есть веские доводы в пользу такого решения - поделитесь
-  get size() {
-    return this.actorSize;
-  }
-
-  set size(newSize) {
-    if ((newSize) && (newSize instanceof Vector)) {
-      this.actorSize = newSize;
-    }
-  }
-
-  get speed() {
-    return this.actorSpeed;
-  }
-
-  set speed(newSpeed) {
-    if ((newSpeed) && (newSpeed instanceof Vector)) {
-      this.actorSpeed = newSpeed;
-    }
+    return isIntersectX() && isIntersectY();
   }
 
   get left() {
@@ -167,161 +85,89 @@ class Actor {
 
 class Level {
 
-  // некорректные значения по-умолчанию
-  constructor(grid = null, actors = null) {
-    this.grid = grid || [];
-    this.actors = actors || [];
+  constructor(grid = [], actors = []) {
+    this.grid = grid;
+    this.actors = actors;
     this.status = null;
     this.finishDelay = 1;
-  }
-
-  // это ошибка
-  get grid() {
-    return this.grid;
-  }
-
-  set grid(newGrid) {
-    if (newGrid) {
-      // тут тоже ошибка
-      this.grid = grid;
-    }
-  }
-
-  // ошибка
-  get actors() {
-    return this.actors;
-  }
-
-  set actors(newActors) {
-    // ошибка
-    if (actors) {
-      this.actors = actors;
-    }
-  }
-
-  // лучше задать в конструкторе, чтобы каждый раз не искать в массиве
-  get player() {
-    return this.actors.find( item => item.type = 'player' );
-  }
-
-  // я бы тоже в конструкторе это задал
-  get height() {
-    return this.grid.length;
-  }
-
-  get width() {
-    // lengths
-    const lengthes = this.grid.map( item => item.length );
-    // направление правильное,
-    // только если будет пустой массив то вернётся бесконечность
-    // нужно добавить ещё один аргумент
-    return Math.max(...lengthes);//это надо протестировать
-  }
-
-  // ошибка
-  get status() {
-    return this.status;
-  }
-
-  set status(newStatus) {
-    // ошибка
-    if (status) {
-      this.status = newStatus;
-    }
-  }
-
-  // ошибка
-  get finishDelay() {
-    return this.finishDelay;
-  }
-
-  // лишнее усложенение
-  set finishDelay(newDelay) {
-    if (newDelay) {//подумать о дополнительных проверках: NaN, диапазон, >0 и т.п.
-      this.finishDelay = newDelay;
-    }
+    this.player = this.actors.find(item => item.type === 'player');
+    this.height = this.grid.length;
+    const lengthes = this.grid.map(item => item.length);
+    this.width = Math.max(0, ...lengthes);
   }
 
   isFinished() {
-    // первая половина выражения написана неправильно
-    // true/false никогда не будут равны null
-    // скобки можно опустить
-    return (!this.status === null) && (finishDelay < 0);
+    return (this.status != null) && (this.finishDelay < 0);
   }
 
   actorAt(actor) {
-    if ((!actor) || (!actor instanceof Actor)) {
-      throw Error('Некорректный аргумент метода actorAt() объекта Actor');
-    // else не нужен
-    } else {
-      //...
-
+    if ((!actor) || (!(actor instanceof Actor))) {
+      throw Error('Некорректный аргумент метода "actorAt()" объекта "Actor"');
     }
+    return this.actors.find(item => item.isIntersect(actor)) || undefined;
   }
 
   obstacleAt(toPosition, size) {
-    if((!toPosition instanceof Vector) || (!size instanceof Vector)) {
-      throw Error('Аргументы метода obstacleAt объекта Level должны иметь тип Vector');
-    // else не нужен
-    } else {
-      //...
+    if(!(toPosition instanceof Vector) || (!(size instanceof Vector))) {
+      throw Error('Аргументы метода "obstacleAt()" объекта "Level" должны иметь тип "Vector"');
     }
+
+    const actorAtNewPos = new Actor(toPosition, size);
+
+    if (actorAtNewPos.bottom > this.height) {
+      return 'lava';
+    }
+    if (actorAtNewPos.top < 0 || actorAtNewPos.left < 0 || actorAtNewPos.right > this.width) {
+      return 'wall';
+    }
+    
+    const l = Math.floor(actorAtNewPos.left);
+    const t = Math.floor(actorAtNewPos.top);
+    const r = Math.ceil(actorAtNewPos.right);
+    const b = Math.ceil(actorAtNewPos.bottom);
+
+    for (let x = l; x < r; x++) {
+      for (let y = t; y < b; y++){
+        if (this.grid[y][x] !== undefined) {
+          return this.grid[y][x];
+        }
+      }
+    }
+
+    return undefined;
   }
 
   removeActor(actor) {
-    // лишняя проверка
-    if (actor instanceof Actor) {//подумать о дополнительных проверках
-      //...найти в массиве actors[] и вырезать
-      // метод неправильно отработает, если объект не будет найден
-      this.actors.splice(this.actors.indexOf(actor), 1);//или findIndex?
-      // это совсем лишняя строчка, зачем вы её написали?
-      //ссылку тоже обнуляем:
-      actor = null;
+    const index = this.actors.indexOf(actor);
+    if (index > -1) {
+      this.actors.splice(index, 1);
     }
   }
 
   noMoreActors(actorType) {
-    // проверку можно убрать
-    if (actorType instanceof String) {
-      // неправильно отработает на пустом массиве
-      // (лучше использовать другой метод массива)
-      return actors.every( item => item.type !== actorType );
-    }
-    return false;
+    return !this.actors.some(item => item.type === actorType);
   }
 
-  playerTouched(objectType, actor = null) {
-    // лучше обратить условие и прервать выполнение функции,
-    // чтобы уменьшить вложенность кода
-    if (this.status) {
-      // switch тут не самая удачная конструкция,
-      // сложно разобраться в коде
-      switch(objectType) {
-        case 'lava', 'fireball':
-          this.status = 'lost';
-          break;
-        case 'coin':
-          if ((actor) && (actor instanceof Coin)) {
-            this.removeActor(actor);
-            if (this.noMoreActors('coin')) {
-              this.status = 'won';
-            }
-          }
-          break;
-        default:
-          //...
-          break;
+  playerTouched(objectType, actor) {
+    if (this.status) return;
+
+    if (objectType === 'coin') {
+      if (actor && (actor instanceof Actor)) {
+        this.removeActor(actor);
+        if (this.noMoreActors('coin')) {
+          this.status = 'won';
+        }
       }
+    } else if (objectType === 'lava' || objectType === 'fireball') {
+      this.status = 'lost';
     }
   }
-
 
 }//end of class Level
 
 
 class LevelParser {
 
-  // лучше добавить значение по-умолчанию
   constructor(dict) {
     this.dict = dict;
     this.grid = [];
@@ -329,27 +175,65 @@ class LevelParser {
   }
 
   actorFromSymbol(symbol) {
-    //...
+    if (!symbol || !(symbol in this.dict) || (typeof(this.dict[symbol]) !== 'function')) {
+      return undefined;
+    }
+
+    const actor = this.dict[symbol];
+
+    if ((actor.prototype instanceof Actor) || (actor === Actor)) {
+      return actor;
+    }
+    return undefined;
   }
 
   obstacleFromSymbol(symbol) {
-    //...
+    const obstacleDict = {
+      'x': 'wall',
+      '!': 'lava'
+    }
+
+    if (!symbol || !(symbol in obstacleDict)) {
+      return undefined;
+    }
+
+    return obstacleDict[symbol];    
   }
 
   createGrid(symbols) {
-    //...
+    if (symbols.length === 0) {
+      return [];
+    }
+
+    symbols.forEach(string => {
+      this.grid.push(Array.from(string).map(elem => elem = this.obstacleFromSymbol(elem)));
+    });
+
     return this.grid;
   }
 
-  createActors() {
-    //...
+  createActors(symbols) {
+    if (symbols.length === 0 || this.dict == null) {
+      return [];
+    }
+
+    symbols.forEach((string, y) => {
+
+      Array.from(string).forEach((symbol, x) => {
+        const actorConstructor = this.actorFromSymbol(symbol);
+
+        if (actorConstructor !== undefined) {
+          this.actors.push(new actorConstructor(new Vector(x, y)));
+        }
+      });
+
+    });
+
     return this.actors;
   }
 
   parse(objects) {
-    const level = new Level(this.grid, this.actors);
-    //...
-    return level;
+    return new Level(this.createGrid(objects), this.createActors(objects));
   }
 
 }//end of class LevelParser
@@ -357,8 +241,7 @@ class LevelParser {
 
 class Fireball extends Actor {
 
-  // некорректные значения по-умолчанию
-  constructor(position = null, speed = null) {
+  constructor(position = new Vector(0, 0), speed = new Vector(0, 0)) {
     super(position, new Vector(1, 1), speed);
   }
 
@@ -367,23 +250,20 @@ class Fireball extends Actor {
   }
 
   getNextPosition(time = 1) {
-    // лишняя проверка, по-моему
-    if (time < 0) {
-      time = 0;
-    }
     return this.pos.plus(this.speed.times(time));
   }
 
   handleObstacle() {
-    // мутирование объекта Vector - плохо,
-    // ошибки сложно будет искать потом
-    // тут нужно использовать мтеод класса Vector
-    this.speed.x *= -1;
-    this.speed.y *= -1;
+    this.speed = this.speed.times(-1);
   }
 
   act(time, level) {
-    //...
+    const nextPos = this.getNextPosition(time);
+    if (level.obstacleAt(nextPos, this.size)) {
+      this.handleObstacle();
+    } else {
+      this.pos = nextPos;
+    }
   }
 
 }//end of class Fireball
@@ -391,7 +271,6 @@ class Fireball extends Actor {
 
 class HorizontalFireball extends Fireball {
 
-  // значение по-умолчанию
   constructor(position) {
     super(position, new Vector(2, 0));
   }
@@ -400,23 +279,24 @@ class HorizontalFireball extends Fireball {
 
 
 class VerticalFireball extends Fireball {
-  // значение по-умолчанию
+
   constructor(position) {
     super(position, new Vector(0, 2));
   }
+
 }//end of class VerticalFireball
 
 
 class FireRain extends Fireball {
 
-  // значение по-умолчанию
-  constructor(position) {
+  constructor(position = new Vector(0, 0)) {
     super(position, new Vector(0, 3));
+    this.startPos = position;
   }
 
   handleObstacle() {
-    // эта строчка ничего не делает
-    this.speed.y *= 1;
+    this.speed.times(1);//переопределяем метод родителя
+    this.pos = this.startPos;
   }
 
 }//end of class FireRain
@@ -424,40 +304,33 @@ class FireRain extends Fireball {
 
 class Coin extends Actor {
 
-  constructor(position) {
-    // первая половина проверки лишняя
-    // я бы убрал проверку вообще и добавил значение по-умолчанию для аргумента
-    if ((position) && (position instanceof Vector)) {
-      super(position.plus(0.2, 0.1), new Vector(0.6, 0.6), new Vector(0, 8));
-    }    
+  constructor(position = new Vector(0, 0)) {
+    super(position.plus(new Vector(0.2, 0.1)), new Vector(0.6, 0.6), new Vector(0, 8));
+    this.startPos = position.plus(new Vector(0.2, 0.1));  
     this.springSpeed = 8;
     this.springDist = 0.07;
-    this.spring = 0;//переделать: случайное число 0...2pi
+    this.spring = Math.random() * 2 * Math.PI;
   }
 
-  // неправильное название свойства
-  get Type() {
+  get type() {
     return 'coin';
   }
 
   updateSpring(time = 1) {
-    //добавить проверки time
     this.spring += this.springSpeed * time;
   }
 
   getSpringVector() {
-    //...this.springDist * Math.sin(this.spring)
-    return this.pos;
+    return new Vector(0, this.springDist * Math.sin(this.spring));
   }
 
   getNextPosition(time = 1) {
-    //добавить проверки time
-    //...
-    return this.pos;
+    this.updateSpring(time);
+    return this.startPos.plus(this.getSpringVector());
   }
 
-  act(time) {
-    //...
+  act(time = 1) {
+    this.pos = this.getNextPosition(time);
   }
 
 }//end of class Coin
@@ -465,15 +338,11 @@ class Coin extends Actor {
 
 class Player extends Actor {
 
-  constructor(position) {
-    // заменил бы на значение по-умолчанию
-    if ((position) && (position instanceof Vector)) {
-      super(position.plus(0, -0.5), new Vector(0.8, 1.5), new Vector(0, 0));
-    }
+  constructor(position = new Vector(0, 0)) {
+    super(position.plus(new Vector(0, -0.5)), new Vector(0.8, 1.5), new Vector(0, 0));
   }
 
-  // неправильное название свойства
-  get Type() {
+  get type() {
     return 'player';
   }
 
