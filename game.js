@@ -223,6 +223,12 @@ class LevelParser {
   }
 
   parse(objects) {
+    if (this.grid) {
+      this.grid = [];
+    }
+    if (this.actors) {
+      this.actors = [];
+    }
     return new Level(this.createGrid(objects), this.createActors(objects));
   }
 
@@ -285,7 +291,6 @@ class FireRain extends Fireball {
   }
 
   handleObstacle() {
-    //this.speed.times(1);//переопределяем метод родителя
     this.pos = this.startPos;
   }
 
@@ -338,105 +343,7 @@ class Player extends Actor {
 
 }//end of class Player
 
-
-//пробный пуск
-const schemas = [
-  [
-    "     v                 ",
-    "                       ",
-    "                       ",
-    "                       ",
-    "                       ",
-    "  |xxx       w         ",
-    "  o                 o  ",
-    "  x               = x  ",
-    "  x          o o    x  ",
-    "  x  @    *  xxxxx  x  ",
-    "  xxxxx             x  ",
-    "      x!!!!!!!!!!!!!x  ",
-    "      xxxxxxxxxxxxxxx  ",
-    "                       "
-  ],
-  [
-    "     v                 ",
-    "                       ",
-    "                       ",
-    "                       ",
-    "                       ",
-    "  |                    ",
-    "  o                 o  ",
-    "  x               = x  ",
-    "  x          o o    x  ",
-    "  x  @       xxxxx  x  ",
-    "  xxxxx             x  ",
-    "      x!!!!!!!!!!!!!x  ",
-    "      xxxxxxxxxxxxxxx  ",
-    "                       "
-  ],
-  [
-    "        |           |  ",
-    "                       ",
-    "                       ",
-    "                       ",
-    "                       ",
-    "                       ",
-    "                       ",
-    "                       ",
-    "                       ",
-    "     |                 ",
-    "                       ",
-    "         =      |      ",
-    " @ |  o            o   ",
-    "xxxxxxxxx!!!!!!!xxxxxxx",
-    "                       "
-  ],
-  [
-    "                       ",
-    "                       ",
-    "                       ",
-    "    o                  ",
-    "    x      | x!!x=     ",
-    "         x             ",
-    "                      x",
-    "                       ",
-    "                       ",
-    "                       ",
-    "               xxx     ",
-    "                       ",
-    "                       ",
-    "       xxx  |          ",
-    "                       ",
-    " @                     ",
-    "xxx                    ",
-    "                       "
-  ], [
-    "   v         v",
-    "              ",
-    "         !o!  ",
-    "              ",
-    "              ",
-    "              ",
-    "              ",
-    "         xxx  ",
-    "          o   ",
-    "        =     ",
-    "  @           ",
-    "  xxxx        ",
-    "  |           ",
-    "      xxx    x",
-    "              ",
-    "          !   ",
-    "              ",
-    "              ",
-    " o       x    ",
-    " x      x     ",
-    "       x      ",
-    "      x       ",
-    "   xx         ",
-    "              "
-  ]
-];
-
+//запуск игры
 const actorDict = {
   '@': Player,
   'v': FireRain,
@@ -446,5 +353,11 @@ const actorDict = {
 }
 const parser = new LevelParser(actorDict);
 
-runGame(schemas, parser, DOMDisplay)
-  .then(() => console.log('Game over'));
+const launch = (text) => {
+  const plans = JSON.parse(text);
+  runGame(plans, parser, DOMDisplay)
+    .then(() => console.log('Game over'));
+}
+
+loadLevels()
+  .then(text => launch(text));
