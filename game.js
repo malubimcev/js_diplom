@@ -208,16 +208,15 @@ class LevelParser {
       return [];
     }
 
-    symbols.forEach((string, y) => {
-
-      string.split('').forEach((symbol, x) => {
-        const actorConstructor = this.actorFromSymbol(symbol);
-        if (actorConstructor !== undefined) {
-          this.actors.push(new actorConstructor(new Vector(x, y)));
+    this.actors = symbols.reduce((result, string, y) => {
+      string.split('').map((char, x) => {
+        const actorConstructor = this.actorFromSymbol(char);
+        if (actorConstructor) {
+          result.push(new actorConstructor(new Vector(x, y)));
         }
       });
-
-    });
+      return result;
+    }, []);
 
     return this.actors;
   }
@@ -353,11 +352,20 @@ const actorDict = {
 }
 const parser = new LevelParser(actorDict);
 
-const launch = (text) => {
-  const plans = JSON.parse(text);
+function launch(plans) {
   runGame(plans, parser, DOMDisplay)
-    .then(() => console.log('Game over'));
+    .then(() => console.log('Вы выиграли!'));
 }
 
 loadLevels()
-  .then(text => launch(text));
+  .then(text => {
+    try {
+      const plans = JSON.parse(text);
+      launch(plans);
+    } catch {
+      console.log(`Ошибка чтения JSON: ${err}`);
+    }
+  })
+  .catch((xhr) => {
+    console.log(`Ошибка загрузки уровней: статус ${xhr.status}.`);
+  });
