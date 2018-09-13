@@ -24,6 +24,8 @@ class Vector {
 class Actor {
 
   constructor(position = new Vector(0, 0), size = new Vector(1, 1), speed = new Vector(0, 0)) {
+    // лучше все проверки в начале функции
+    // а потом основной код
     if (!(position instanceof Vector)) {
       throw Error('Аргумент position не является вектором типа "Vector"');
     }
@@ -46,9 +48,11 @@ class Actor {
 
   isIntersect(actor) {
     //функции сравнения координат по каждой границе объекта:
+    // скобки можно, в принципе, опустить
     const isIntersectX = () => (actor.right > this.left) && (actor.left < this.right);//сравнение по X
     const isIntersectY = () => (actor.bottom > this.top) && (actor.top < this.bottom);//сравнение по Y
 
+    // проверки лучше делать в начале функции
     if (!(actor instanceof Actor)) {
       throw Error('Некорректный аргумент метода "isIntersect()". Требуется аргумент типа "Actor"');
     }
@@ -110,6 +114,9 @@ class Level {
       throw Error('Аргументы метода "obstacleAt()" объекта "Level" должны иметь тип "Vector"');
     }
 
+    // здесь можно не создавать объект
+    // потому что он использоуется только для того,
+    // чтобы сложить несколько чисел
     const actorAtNewPos = new Actor(toPosition, size);
 
     if (actorAtNewPos.bottom > this.height) {
@@ -119,6 +126,8 @@ class Level {
       return 'wall';
     }
     
+    // Cell не совсем удачное название,
+    // я бы написал leftBorder или просто left
     const leftCell = Math.floor(actorAtNewPos.left);
     const topCell = Math.floor(actorAtNewPos.top);
     const rightCell = Math.ceil(actorAtNewPos.right);
@@ -153,6 +162,7 @@ class Level {
     if (objectType === 'lava' || objectType === 'fireball') {
       this.status = 'lost';
     } else if (objectType === 'coin') {
+      // лишняя проверка
       if (actor instanceof Actor) {
         this.removeActor(actor);
         if (this.noMoreActors('coin')) {
@@ -172,12 +182,16 @@ class LevelParser {
     this.obstacleDict = {
       'x': 'wall',
       '!': 'lava'
-    }
+    } // точка с запятой :)
+
+    // непонятно что делают следующие 2 строчки
     this.grid = [];
     this.actors = [];
   }
 
   actorFromSymbol(symbol) {
+    // все проверки лишние
+    return this.dict[symbol];
     if (!symbol || !(symbol in this.dict) || (typeof(this.dict[symbol]) !== 'function')) {
       return undefined;
     }
@@ -194,10 +208,12 @@ class LevelParser {
   }
 
   createGrid(symbols) {
+    // лишняя проверка
     if (symbols.length === 0) {
       return [];
     }
 
+    // метод не должен заполнять никакие поля объекта
     this.grid = symbols.map(string => string.split('').map(elem => this.obstacleFromSymbol(elem)));
     
     return this.grid;
@@ -208,9 +224,13 @@ class LevelParser {
       return [];
     }
 
+    // метод не должен заполнять никакие поля объекта
     this.actors = symbols.reduce((result, string, y) => {
       string.split('').map((char, x) => {
         const actorConstructor = this.actorFromSymbol(char);
+        // тут не хватает проверки типа результата выполнения actorFromSymbol
+        // и проверки типа созданного объекта
+        // (это часть проверок из actorFromSymbol, они должны быть здесь)
         if (actorConstructor) {
           result.push(new actorConstructor(new Vector(x, y)));
         }
@@ -222,9 +242,11 @@ class LevelParser {
   }
 
   parse(objects) {
+    // ???
     if (this.grid) {
       this.grid = [];
     }
+    // ???
     if (this.actors) {
       this.actors = [];
     }
@@ -284,6 +306,7 @@ class VerticalFireball extends Fireball {
 
 class FireRain extends Fireball {
 
+  // елси тут задали значение по-умолчанию, то выше тоже можно
   constructor(position = new Vector(0, 0)) {
     super(position, new Vector(0, 3));
     this.startPos = position;
