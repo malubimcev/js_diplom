@@ -189,8 +189,10 @@ class LevelParser {
     const actors = symbols.reduce((result, string, y) => {
       string.split('').map((char, x) => {
         const actorConstructor = this.actorFromSymbol(char);
+        // тут нужна только первая часть проверки
         if ((typeof(actorConstructor) === 'function') && ((actorConstructor.prototype instanceof Actor) || (actorConstructor === Actor))) {
           const actor = new actorConstructor(new Vector(x, y));
+          // это неправильная проверка
           if (actor instanceof actorConstructor) {
             result.push(actor);
           }
