@@ -189,9 +189,11 @@ class LevelParser {
     const actors = symbols.reduce((result, string, y) => {
       string.split('').map((char, x) => {
         const actorConstructor = this.actorFromSymbol(char);
-        if ((typeof(actorConstructor) === 'function') && ((actorConstructor.prototype instanceof Actor) || (actorConstructor === Actor))) {
+        if (typeof(actorConstructor) === 'function') {
           const actor = new actorConstructor(new Vector(x, y));
-          result.push(actor);
+          if (actor instanceof Actor) {
+            result.push(actor);  
+          }
         }
       });
       return result;
