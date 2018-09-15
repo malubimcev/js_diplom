@@ -191,9 +191,7 @@ class LevelParser {
         const actorConstructor = this.actorFromSymbol(char);
         if ((typeof(actorConstructor) === 'function') && ((actorConstructor.prototype instanceof Actor) || (actorConstructor === Actor))) {
           const actor = new actorConstructor(new Vector(x, y));
-          if (actor instanceof actorConstructor) {
-            result.push(actor);
-          }
+          result.push(actor);
         }
       });
       return result;
